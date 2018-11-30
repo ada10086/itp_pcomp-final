@@ -7,7 +7,7 @@ int G = 255;
 int s = 1; //blinking speed
 int button1State = 0;       // current state of the button
 int pButton1State = 0;   // previous state of the button
-int stage = 0;
+int stage = 3;   // change the number 0-3 
 void setup() {
   strip.begin();
   pinMode(7, INPUT);
@@ -22,9 +22,9 @@ void loop() {
       strip.setPixelColor(i, 255, 255, 255);
     }
     strip.show();
-    if (button1State != pButton1State && button1State == 1 ) {
-      stage = 1;
-    }
+//    if (button1State != pButton1State && button1State == 1 ) {
+//      stage = 1;
+//    }
   }
 
   //activation stage. if activated, blink green
@@ -38,31 +38,31 @@ void loop() {
     }
     strip.show();
     delay(2);
-    if (button1State != pButton1State && button1State == 1 ) {
-      stage = 2;
-    }
+//    if (button1State != pButton1State && button1State == 1 ) {
+//      stage = 2;
+//    }
   }
 
 //  //do you want to enter next stage of the program
-//  if (stage == 2) {
-//    for (int i = 0 ; i < 6; i++) {
-//      strip.setPixelColor(i, random(255), random(255), random(255));
-//      delay(20);
-//    }
-//    strip.show();
+  if (stage == 2) {
+    for (int i = 0 ; i < 6; i++) {
+      strip.setPixelColor(i, random(255), random(255), random(255));
+      delay(20);
+    }
+    strip.show();
 //    if (button1State != pButton1State && button1State == 1 ) {
 //      stage = 3;
 //    }
-//  }
+  }
 //
 //  //deactivation stage, if deactivated, red
-//  if (stage == 3) {
-//    for (int i = 0 ; i < 6; i++) {
-//      strip.setPixelColor(i, 255, 0, 0);
-//    }
-//    strip.show();
-//  }
-//  
+  if (stage == 3) {
+    for (int i = 0 ; i < 6; i++) {
+      strip.setPixelColor(i, 255, 0, 0);
+    }
+    strip.show();
+  }
+
   pButton1State = button1State;
   Serial.print(button1State);
   Serial.print(",");
