@@ -7,7 +7,7 @@ int G = 0;
 int s = 1; //blinking speed
 int button1State = 0;       // current state of the button
 int pButton1State = 0;   // previous state of the button
-int stage = 1;   // change the number 0-3
+int stage = 2;   // change the number 0-3
 unsigned long startTime;
 
 
