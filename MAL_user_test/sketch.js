@@ -7,6 +7,8 @@ var numOfActivated;
 var modulePosition;
 var counter, timer; //to set interval for playing uploading voice 
 var time;
+var timerStarted = false;
+var lastTime, currentTime;
 var j; //detect clicked module
 //voice:
 var a1, a3, a5, a7, a9, a10, urg1, urg2; //activation stage + urging voice
@@ -77,7 +79,6 @@ function setup() {
   button = createButton("start session");
   button.position(20, 20);
   button.mousePressed(startSession);
-
   //initialize modules
   for (i = 0; i < 10; i++) {
     if (i < 5) { //1st row
@@ -122,30 +123,51 @@ function draw() {
   }
   // console.log("stage = " + stage);
 
-  console.log(uploadingVoiceIsPlaying());
+  if (stage == "DEACTIVATION") {
+    startUploadingTimer();
+    // let len = a10.duration();
+    // a10.addCue(len - 0.5, startUploadingTimer);
+  }
+  // console.log(uploadingVoiceIsPlaying());
+
 }
 
+// function startUploadingTimer() {
+//   counter = 0;
+//   timer = setInterval(playUploadingVoice, 10000);
+//   console.log("Uploading timer starts");
+// }
+
+// //play uploading voices at 5 sec interval
+// function playUploadingVoice() {
+//   uploadingVoice[counter].play();
+//   counter++;
+//   if (counter == uploadingVoice.length) {
+//     clearInterval(timer);
+//   }
+//   console.log("uploading")
+// }
+
+
 function startUploadingTimer() {
-  counter = 0;
-  timer = setInterval(playUploadingVoice, 10000);
+  console.log(millis()-lastTime);
+  if (millis() - lastTime > 7000 && counter < uploadingVoice.length) {
+    console.log("uploading")
+    uploadingVoice[counter].play();
+    counter++;
+    lastTime = millis();
+  }else if (d9.isPlaying() || d7.isPlaying() || d5.isPlaying() || d3.isPlaying() || d1.isPlaying()) {
+    lastTime = millis();
+  }
   console.log("Uploading timer starts");
 }
 
-//play uploading voices at 5 sec interval
-function playUploadingVoice() {
-  uploadingVoice[counter].play();
-  counter++;
-  if (counter == uploadingVoice.length) {
-    clearInterval(timer);
-  }
-  console.log("uploading")
-}
 
-function uploadingVoiceIsPlaying(){
+function uploadingVoiceIsPlaying() {
   let numOfUploadingVoices = uploadingVoice.filter(_voice => _voice.isPlaying() == true).length;
-  if (numOfUploadingVoices == 1){
+  if (numOfUploadingVoices == 1) {
     return true;
-  }else if(numOfUploadingVoices == 0){
+  } else if (numOfUploadingVoices == 0) {
     return false;
   }
 }
@@ -268,9 +290,12 @@ function mousePressed() {
         modules[i].activate(mouseX, mouseY);
       }
       a10.play();
+
+      lastTime = millis();
+      counter = 0
       //add a delay of duration(a10) before starting uploading timer
       let len = a10.duration();
-      a10.addCue(len - 0.5, startUploadingTimer);
+      a10.addCue(len - 0.5, timerStarted());
     }
 
 
@@ -288,58 +313,62 @@ function mousePressed() {
         } else if (modulePosition.y == windowHeight / 2) {
           j = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW) + 5;
         }
-        console.log(j+1);
+        console.log(j + 1);
       }
     }
 
 
-      if (numOfActivated == 10 && !a10.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
-        d9.play();
-      } else if (numOfActivated == 9 && !d9.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
-      } else if (numOfActivated == 8 && !d9.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
-        d7.play();
-      } else if (numOfActivated == 7 && !d7.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
-      } else if (numOfActivated == 6 && !d7.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
-        d5.play();
-      } else if (numOfActivated == 5 && !d5.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
-      } else if (numOfActivated == 4 && !d5.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
-        d3.play();
-      } else if (numOfActivated == 3 && !d3.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
-      } else if (numOfActivated == 2 && !d3.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
-        d1.play();
-      } else if (numOfActivated == 1 && !d1.isPlaying()&&!uploadingVoiceIsPlaying()) {
-        for (i = 0; i < 10; i++) {
-          modules[i].deactivate(mouseX, mouseY);
-        }
+    if (numOfActivated == 10 && !a10.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
       }
-
+      d9.play();
+    } else if (numOfActivated == 9 && !d9.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
+      }
+    } else if (numOfActivated == 8 && !d9.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
+      }
+      d7.play();
+    } else if (numOfActivated == 7 && !d7.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
+      }
+    } else if (numOfActivated == 6 && !d7.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
+      }
+      d5.play();
+    } else if (numOfActivated == 5 && !d5.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
+      }
+    } else if (numOfActivated == 4 && !d5.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
+      }
+      d3.play();
+    } else if (numOfActivated == 3 && !d3.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
+      }
+    } else if (numOfActivated == 2 && !d3.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
+      }
+      d1.play();
+    } else if (numOfActivated == 1 && !d1.isPlaying() && !uploadingVoiceIsPlaying()) {
+      for (i = 0; i < 10; i++) {
+        modules[i].deactivate(mouseX, mouseY);
+      }
     }
 
   }
+
+}
+
+function timerStarted(){
+  return true;
+}
