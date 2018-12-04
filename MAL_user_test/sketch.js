@@ -22,7 +22,7 @@ var s1 = new Tone.Player("./SoundTest/activation/wave.mp3").toMaster();
 s1.volume.value = -2;
 s1.loop = true;
 var s2 = new Tone.Player("./SoundTest/activation/meditation.mp3").toMaster();
-s2.volume.value = -20;
+s2.volume.value = -10;
 s2.loop = true;
 var s3 = new Tone.Player("./SoundTest/activation/rain.mp3").toMaster();
 s3.volume.value = -15;
@@ -58,20 +58,21 @@ s14.volume.value = -10;
 s14.loop = true;
 
 function preload() {
-  // a0 = loadSound("./Activation/a0.mp3");
-  // a1 = loadSound("./Activation/a1.mp3");
-  // a3 = loadSound("./Activation/a3.mp3");
-  // a5 = loadSound("./Activation/a5.mp3");
-  // a7 = loadSound("./Activation/a7.mp3");
-  // a9 = loadSound("./Activation/a9.mp3");
-  a10 = loadSound("./Activation/a10.mp3");
-  urg1 = loadSound("./Activation/urging 1.mp3");
-  urg2 = loadSound("./Activation/urging 2.mp3");
+  // a0 = loadSound("./ActivationV2/a0.mp3");
+  // a1 = loadSound("./ActivationV2/a1.mp3");
+  // a3 = loadSound("./ActivationV2/a3.mp3");
+  // a5 = loadSound("./ActivationV2/a5.mp3");
+  // a7 = loadSound("./ActivationV2/a7.mp3");
+  // a9 = loadSound("./ActivationV2/a9.mp3");
+  // a10 = loadSound("./ActivationV2/a10.mp3");
+  // urg1 = loadSound("./ActivationV2/urging 1.mp3");
+  // urg2 = loadSound("./ActivationV2/urging 2.mp3");
   // d9 = loadSound("./Deactivation/d9.mp3");
   // d7 = loadSound("./Deactivation/d7.mp3");
   // d5 = loadSound("./Deactivation/d5.mp3");
   // d3 = loadSound("./Deactivation/d3.mp3");
   // d1 = loadSound("./Deactivation/d1.mp3");
+
   u1 = loadSound("./Uploading/1initialize.mp3");
   u2 = loadSound("./Uploading/2scanning.mp3");
   u3 = loadSound("./Uploading/3mapping.mp3");
@@ -86,7 +87,7 @@ function preload() {
   a5 = loadSound("./ActivationTest/a5.mp3");
   a7 = loadSound("./ActivationTest/a7.mp3");
   a9 = loadSound("./ActivationTest/a9.mp3");
-  // a10 = loadSound("./ActivationTest/a10.mp3");
+  a10 = loadSound("./ActivationTest/a10.mp3");
   d9 = loadSound("./DeactivationTest/d9.mp3");
   d7 = loadSound("./DeactivationTest/d7.mp3");
   d5 = loadSound("./DeactivationTest/d5.mp3");
@@ -142,14 +143,14 @@ function draw() {
   }
 
   //waiver
-  text("waiver:",10, windowHeight*5/6);
-  text("Warning: never take off your headset when the session is in progress, as it might cause irreversible brain damage.", 10, windowHeight*5/6+20);
-  if(stage == "ACTIVATION"){
+  text("waiver:", 10, windowHeight * 5 / 6);
+  text("Warning: never take off your headset when the session is in progress, as it might cause irreversible brain damage.", 10, windowHeight * 5 / 6 + 20);
+  if (stage == "ACTIVATION") {
     fill(255);
-  }else{
-    fill(255,0,0);
+  } else {
+    fill(255, 0, 0);
   }
-  text("In case of any discomfort or malfunction, you can deactivate the machine in the following sequence: 1, 3, 5, 7, 9, 2, 4, 6, 8, 10...", 10, windowHeight * 5/6+40)
+  text("In case of any discomfort or malfunction, you can deactivate the machine in the following sequence: 1, 3, 5, 7, 9, 2, 4, 6, 8, 10...", 10, windowHeight * 5 / 6 + 40)
   //track number of activated modules
   numOfActivated = modules.filter(_module => {
     return _module.isActivated === true
@@ -167,6 +168,10 @@ function draw() {
   if (stage == "DEACTIVATION" && !a10.isPlaying()) {
     startUploadingTimer();
   }
+
+  for(i=0;i<10;i++){
+    modules[i].wasActivated = modules[i].isActivated;
+  }
 }
 
 
@@ -177,6 +182,7 @@ class Module {
     this.w = moduleW;
     this.h = moduleH;
     this.isActivated = false;
+    this.wasActivated = false;
   }
   display() {
     if (numOfActivated < 9) {
@@ -222,11 +228,11 @@ class Module {
 
   moduleClicked(_mx, _my) {
     if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
-      // let _modulePosition = { x: this.x, y: this.y }
       let _modulePosition = createVector(this.x, this.y);
       return _modulePosition;
+    } else {
+      return false;
     }
-    return false
   }
 
 }
@@ -285,22 +291,26 @@ function mousePressed() {
 
   }
   else if (stage == "DEACTIVATION") {  //13579 246810
-    
+
+    // track which module is clicked
     for (i = 0; i < 10; i++) {
       modulePosition = modules[i].moduleClicked(mouseX, mouseY);
-      if (modulePosition) {
-        if (modulePosition.y == windowHeight / 2 - 2 * moduleH) {
-          index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW);
-        } else if (modulePosition.y == windowHeight / 2) {
-          index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW) + 5;
+      // if(modules[i].wasActivated !== modules[i].isActivated){
+        if (modulePosition) {
+          if (modulePosition.y == windowHeight / 2 - 2 * moduleH) {
+            index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW);
+          } else if (modulePosition.y == windowHeight / 2) {
+            index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW) + 5;
+          }
+          console.log(index + 1);
         }
-        console.log(index + 1);
-      }
+      // }
     }
 
 
     if (numOfActivated == 10 && !a10.isPlaying() && !uploadingVoiceIsPlaying()) {
       deactivateModules()
+
       d9.play();
     } else if (numOfActivated == 9 && !d9.isPlaying() && !uploadingVoiceIsPlaying()) {
       deactivateModules()
@@ -341,12 +351,13 @@ function deactivateModules() {
 }
 
 function startUploadingTimer() {
-  console.log("Uploading timer starts");
-  console.log(millis() - lastTime);
+  // console.log("Uploading timer starts");
+  // console.log(millis() - lastTime);
   if (millis() - lastTime > 7000 && counter < uploadingVoice.length) {
     console.log("uploading in progess")
     uploadingVoice[counter].play();
-    if(counter < uploadingSound.length){
+    if (counter < uploadingSound.length) {
+      s10.stop();
       uploadingSound[counter].start();
     }
     counter++;
