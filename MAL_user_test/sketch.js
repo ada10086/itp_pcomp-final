@@ -2,7 +2,7 @@ var modules = []
 var moduleW = 40;
 var moduleH = 150;
 var button; //start/reset button
-var stage = "ACTIVATION"; //activation or deactivation
+var stage; //activation or deactivation
 var numOfActivated; //number of activated modules
 var modulePosition;  //clicked module position vector for calculating index
 var index; //index of clicked module
@@ -42,7 +42,6 @@ s7.loop = true;
 var s10 = new Tone.Player("./SoundTest/deactivation/eflat pulse.mp3").toMaster();
 s10.volume.value = -10;
 s10.loop = true;
-//?????? loopEnd =3;
 
 var s11 = new Tone.Player("./SoundTest/deactivation/analog extreme.wav").toMaster();
 s11.volume.value = -10;
@@ -80,7 +79,7 @@ function preload() {
   u5 = loadSound("./Uploading/5uploading.mp3");
   u6 = loadSound("./Uploading/Congratulations.mp3");
 
-  //testing voice files
+  // //testing voice files
   a0 = loadSound("./ActivationTest/a0.mp3");
   a1 = loadSound("./ActivationTest/a1.mp3");
   a3 = loadSound("./ActivationTest/a3.mp3");
@@ -147,10 +146,11 @@ function draw() {
   text("Warning: never take off your headset when the session is in progress, as it might cause irreversible brain damage.", 10, windowHeight * 5 / 6 + 20);
   if (stage == "ACTIVATION") {
     fill(255);
+    text("In case of any discomfort or malfunction, you can deactivate the machine in the following sequence: 1, 3, 5, 7, 9, 2, 4, 6, 8, 10...", 10, windowHeight * 5 / 6 + 40);
   } else {
     fill(255, 0, 0);
+    text("In case of any discomfort or malfunction, you can deactivate the machine in the following sequence: 1, 3, 5, 7, 9, 2, 4, 6, 8, 10...", 10, windowHeight * 5 / 6 + 40)
   }
-  text("In case of any discomfort or malfunction, you can deactivate the machine in the following sequence: 1, 3, 5, 7, 9, 2, 4, 6, 8, 10...", 10, windowHeight * 5 / 6 + 40)
   //track number of activated modules
   numOfActivated = modules.filter(_module => {
     return _module.isActivated === true
@@ -169,7 +169,7 @@ function draw() {
     startUploadingTimer();
   }
 
-  for(i=0;i<10;i++){
+  for (i = 0; i < 10; i++) {
     modules[i].wasActivated = modules[i].isActivated;
   }
 }
@@ -208,17 +208,16 @@ class Module {
   }
 
   activate(_mx, _my) {
-    if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
+    if (this.mouseClickedOnModule(_mx, _my)) {
       if (!this.isActivated) {
         this.isActivated = true;
         // console.log("activated");
-        //console.log(???"module"+i+"is activated");
       }
     }
   }
 
   deactivate(_mx, _my) {
-    if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
+    if (this.mouseClickedOnModule(_mx, _my)) {
       if (this.isActivated) {
         this.isActivated = false;
         // console.log("deactivated");
@@ -226,129 +225,166 @@ class Module {
     }
   }
 
-  moduleClicked(_mx, _my) {
+  // moduleClicked(_mx, _my) {
+  //   if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
+  //     let _modulePosition = createVector(this.x, this.y);
+  //     return _modulePosition;
+  //   } else {
+  //     return false;
+  //   }
+  // }
+
+  mouseClickedOnModule(_mx, _my) {
     if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
-      let _modulePosition = createVector(this.x, this.y);
-      return _modulePosition;
+      return true;
     } else {
       return false;
     }
   }
-
 }
 
 function mousePressed() {
-  //activating stage:
-  if (stage == "ACTIVATION") {
+  for (i = 0; i < 10; i++) {
+    //if mouse is clicked on the module
+    if (modules[i].mouseClickedOnModule(mouseX, mouseY)) {
 
-    if (numOfActivated == 1 - 1 && !a0.isPlaying()) {
-      activateModules()
-      Tone.Transport.start();
-      s1.start();
-      a1.play();
-    } else if (numOfActivated == 2 - 1 && !a1.isPlaying()) {
-      activateModules()
-      s2.start();
-    } else if (numOfActivated == 3 - 1 && !a1.isPlaying()) {
-      activateModules()
-      s3.start();
-      a3.play();
-    } else if (numOfActivated == 4 - 1 && !a3.isPlaying()) {
-      activateModules()
-      s4.start();
-    } else if (numOfActivated == 5 - 1 && !a3.isPlaying()) {
-      activateModules()
-      a5.play();
-      s5.start();
-    } else if (numOfActivated == 6 - 1 && !a5.isPlaying()) {
-      activateModules()
-      s6.start();
-    } else if (numOfActivated == 7 - 1 && !a5.isPlaying()) {
-      activateModules()
-      s7.start();
-      a7.play();
-    } else if (numOfActivated == 8 - 1 && !a7.isPlaying()) {
-      activateModules()
-    } else if (numOfActivated == 9 - 1 && !a7.isPlaying()) {
-      activateModules()
-      a9.play();
-    } else if (numOfActivated == 10 - 1 && !a9.isPlaying()) {
-      activateModules()
-      a10.play();
-      s10.start();
-      s1.stop();
-      s2.stop();
-      s3.stop();
-      s4.stop();
-      s5.stop();
-      s6.stop();
-      s7.stop();
-      lastTime = millis();
-      counter = 0
-    }
+      //activating stage:
+      if (stage == "ACTIVATION") {
 
-
-
-  }
-  else if (stage == "DEACTIVATION") {  //13579 246810
-
-    // track which module is clicked
-    for (i = 0; i < 10; i++) {
-      modulePosition = modules[i].moduleClicked(mouseX, mouseY);
-      // if(modules[i].wasActivated !== modules[i].isActivated){
-        if (modulePosition) {
-          if (modulePosition.y == windowHeight / 2 - 2 * moduleH) {
-            index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW);
-          } else if (modulePosition.y == windowHeight / 2) {
-            index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW) + 5;
-          }
-          console.log(index + 1);
+        if (numOfActivated == 1 - 1  && !modules[i].isActivated && !a0.isPlaying()) {
+          // activateModules();
+            modules[i].activate(mouseX,mouseY);
+            Tone.Transport.start();
+            s1.start();
+            a1.play();
+        } else if (numOfActivated == 2 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
+          // activateModules();
+          modules[i].activate(mouseX,mouseY);
+          s2.start();
+        } else if (numOfActivated == 3 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
+          // activateModules();
+          modules[i].activate(mouseX,mouseY);
+          s3.start();
+          a3.play();
+        } else if (numOfActivated == 4 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
+          // activateModules();
+          modules[i].activate(mouseX,mouseY);
+          s4.start();
+        } else if (numOfActivated == 5 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
+          // activateModules();
+          modules[i].activate(mouseX,mouseY);
+          a5.play();
+          s5.start();
+        } else if (numOfActivated == 6 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
+          // activateModules();
+          modules[i].activate(mouseX,mouseY);
+          s6.start();
+        } else if (numOfActivated == 7 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
+          // activateModules();
+          modules[i].activate(mouseX,mouseY);
+          s7.start();
+          a7.play();
+        } else if (numOfActivated == 8 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
+          // activateModules();
+          modules[i].activate(mouseX,mouseY);
+        } else if (numOfActivated == 9 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
+          // activateModules();
+          modules[i].activate(mouseX,mouseY);
+          a9.play();
+        } else if (numOfActivated == 10 - 1 && !modules[i].isActivated && !a9.isPlaying()) {
+          // activateModules();
+          modules[i].activate(mouseX,mouseY);
+          a10.play();
+          s10.start();
+          s1.stop();
+          s2.stop();
+          s3.stop();
+          s4.stop();
+          s5.stop();
+          s6.stop();
+          s7.stop();
+          lastTime = millis();
+          counter = 0;
         }
-      // }
+
+
+
+      }
+      else if (stage == "DEACTIVATION") {  //13579 246810
+
+        // // track which module is clicked
+        // for (i = 0; i < 10; i++) {
+        //   modulePosition = modules[i].moduleClicked(mouseX, mouseY);
+        //     if (modulePosition) {
+        //       if (modulePosition.y == windowHeight / 2 - 2 * moduleH) {
+        //         index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW);
+        //       } else if (modulePosition.y == windowHeight / 2) {
+        //         index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW) + 5;
+        //       }
+        //       console.log(index + 1);
+        //     }
+        // }
+
+        if (numOfActivated == 10 && !a10.isPlaying() && modules[0].isActivated && modules[0].mouseClickedOnModule(mouseX, mouseY) && modules[0].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          modules[0].deactivate(mouseX, mouseY);
+          d9.playMode('untilDone')
+          d9.play();
+        } else if (numOfActivated == 9 && !d9.isPlaying() && modules[2].isActivated && modules[2].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          modules[2].deactivate(mouseX, mouseY);
+        } else if (numOfActivated == 8 && !d9.isPlaying() && modules[4].isActivated && modules[4].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          modules[4].deactivate(mouseX, mouseY);
+          // d7.playMode('untilDone')
+          d7.play();
+        } else if (numOfActivated == 7 && !d7.isPlaying() && modules[6].isActivated && modules[6].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          modules[6].deactivate(mouseX, mouseY);
+        } else if (numOfActivated == 6 && !d7.isPlaying() && modules[8].isActivated && modules[8].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          modules[8].deactivate(mouseX, mouseY);
+          // d5.playMode('untilDone')
+          d5.play();
+        } else if (numOfActivated == 5 && !d5.isPlaying() && modules[1].isActivated && modules[1].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          modules[1].deactivate(mouseX, mouseY);
+        } else if (numOfActivated == 4 && !d5.isPlaying() && modules[3].isActivated && modules[3].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          modules[3].deactivate(mouseX, mouseY);
+          // d3.playMode('untilDone')
+          d3.play();
+        } else if (numOfActivated == 3 && !d3.isPlaying() && modules[5].isActivated && modules[5].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          modules[5].deactivate(mouseX, mouseY);
+        } else if (numOfActivated == 2 && !d3.isPlaying() && modules[7].isActivated && modules[7].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          // d1.playMode('untilDone')
+          d1.play();
+          modules[7].deactivate(mouseX, mouseY);
+        } else if (numOfActivated == 1 && !d1.isPlaying() && modules[9].isActivated && modules[9].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          // deactivateModules()
+          modules[9].deactivate(mouseX, mouseY);
+
+        }
+      }
     }
-
-
-    if (numOfActivated == 10 && !a10.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-
-      d9.play();
-    } else if (numOfActivated == 9 && !d9.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-    } else if (numOfActivated == 8 && !d9.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-      d7.play();
-    } else if (numOfActivated == 7 && !d7.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-    } else if (numOfActivated == 6 && !d7.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-      d5.play();
-    } else if (numOfActivated == 5 && !d5.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-    } else if (numOfActivated == 4 && !d5.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-      d3.play();
-    } else if (numOfActivated == 3 && !d3.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-    } else if (numOfActivated == 2 && !d3.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-      d1.play();
-    } else if (numOfActivated == 1 && !d1.isPlaying() && !uploadingVoiceIsPlaying()) {
-      deactivateModules()
-    }
   }
 }
 
+// activate without sequence
+// function activateModules() {
+//   for (i = 0; i < 10; i++) {
+//     modules[i].activate(mouseX, mouseY);
+//   }
+// }
 
-function activateModules() {
-  for (i = 0; i < 10; i++) {
-    modules[i].activate(mouseX, mouseY);
-  }
-}
-function deactivateModules() {
-  for (i = 0; i < 10; i++) {
-    modules[i].deactivate(mouseX, mouseY);
-  }
-}
+// //deactivate without sequence
+// function deactivateModules() {
+//   for (i = 0; i < 10; i++) {
+//     modules[i].deactivate(mouseX, mouseY);
+//   }
+// }
 
 function startUploadingTimer() {
   // console.log("Uploading timer starts");
@@ -376,3 +412,5 @@ function uploadingVoiceIsPlaying() {
     return false;
   }
 }
+
+
