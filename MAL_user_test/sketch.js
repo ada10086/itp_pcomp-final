@@ -1,40 +1,61 @@
 var modules = []
 var moduleW = 40;
-var moduleH = 100;
+var moduleH = 150;
 var button; //start/reset button
-var stage; //activation or deactivation
-var numOfActivated;
-var modulePosition;
-var counter, timer; //to set interval for playing uploading voice 
-var time;
-var timerStarted = false;
-var lastTime, currentTime;
-var j; //detect clicked module
+var stage = "ACTIVATION"; //activation or deactivation
+var numOfActivated; //number of activated modules
+var modulePosition;  //clicked module position vector for calculating index
+var index; //index of clicked module
+
+var counter; //counter for uploading stage voice
+var lastTime, currentTime;  //uploading stage voice timer
+
 //voice:
 var a1, a3, a5, a7, a9, a10, urg1, urg2; //activation stage + urging voice
 var uploadingVoice = []; //uploading stage voice array
 var u1, u2, u3, u4, u5, u6; //uploading stage voice
+var uploadingSound = []; //uploading stage sound track array
 var d1, d3, d5, d7, d9; //deactivation stage voice
 
 //sound:
-var s1 = new Tone.Player("./SoundTest/bell.mp3").toMaster();
-s1.volume.value = -30;
+var s1 = new Tone.Player("./SoundTest/activation/wave.mp3").toMaster();
+s1.volume.value = -2;
 s1.loop = true;
-var s2 = new Tone.Player("./SoundTest/meditation.mp3").toMaster();
+var s2 = new Tone.Player("./SoundTest/activation/meditation.mp3").toMaster();
 s2.volume.value = -20;
 s2.loop = true;
-var s3 = new Tone.Player("./SoundTest/rain.mp3").toMaster();
+var s3 = new Tone.Player("./SoundTest/activation/rain.mp3").toMaster();
 s3.volume.value = -15;
 s3.loop = true;
-var s4 = new Tone.Player("./SoundTest/wave.mp3").toMaster();
-s4.volume.value = -10;
+var s4 = new Tone.Player("./SoundTest/activation/bell.mp3").toMaster();
+s4.volume.value = -30;
 s4.loop = true;
-var s5 = new Tone.Player("./SoundTest/Sound bowl.mp3").toMaster();
-s5.volume.value = -10;
+var s5 = new Tone.Player("./SoundTest/activation/Sound bowl.mp3").toMaster();
+s5.volume.value = -20;
 s5.loop = true;
-var s6 = new Tone.Player("./SoundTest/sequence.mp3").toMaster();
+var s6 = new Tone.Player("./SoundTest/activation/sequence.mp3").toMaster();
 s6.volume.value = -10;
 s6.loop = true;
+var s7 = new Tone.Player("./SoundTest/activation/drone loop.wav").toMaster();
+s7.volume.value = -20;
+s7.loop = true;
+var s10 = new Tone.Player("./SoundTest/deactivation/eflat pulse.mp3").toMaster();
+s10.volume.value = -10;
+s10.loop = true;
+//?????? loopEnd =3;
+
+var s11 = new Tone.Player("./SoundTest/deactivation/analog extreme.wav").toMaster();
+s11.volume.value = -10;
+s11.loop = true;
+var s12 = new Tone.Player("./SoundTest/deactivation/mri1.mp3").toMaster();
+s12.volume.value = -10;
+s12.loop = true;
+var s13 = new Tone.Player("./SoundTest/deactivation/mri2.mp3").toMaster();
+s13.volume.value = -10;
+s13.loop = true;
+var s14 = new Tone.Player("./SoundTest/deactivation/tension synths.mp3").toMaster();
+s14.volume.value = -10;
+s14.loop = true;
 
 function preload() {
   // a0 = loadSound("./Activation/a0.mp3");
@@ -43,7 +64,7 @@ function preload() {
   // a5 = loadSound("./Activation/a5.mp3");
   // a7 = loadSound("./Activation/a7.mp3");
   // a9 = loadSound("./Activation/a9.mp3");
-  // a10 = loadSound("./Activation/a10.mp3");
+  a10 = loadSound("./Activation/a10.mp3");
   urg1 = loadSound("./Activation/urging 1.mp3");
   urg2 = loadSound("./Activation/urging 2.mp3");
   // d9 = loadSound("./Deactivation/d9.mp3");
@@ -65,7 +86,7 @@ function preload() {
   a5 = loadSound("./ActivationTest/a5.mp3");
   a7 = loadSound("./ActivationTest/a7.mp3");
   a9 = loadSound("./ActivationTest/a9.mp3");
-  a10 = loadSound("./ActivationTest/a10.mp3");
+  // a10 = loadSound("./ActivationTest/a10.mp3");
   d9 = loadSound("./DeactivationTest/d9.mp3");
   d7 = loadSound("./DeactivationTest/d7.mp3");
   d5 = loadSound("./DeactivationTest/d5.mp3");
@@ -75,6 +96,7 @@ function preload() {
 
 function setup() {
   uploadingVoice = [u1, u2, u3, u4, u5, u6];
+  uploadingSound = [s11, s12, s13, s14];
   createCanvas(windowWidth, windowHeight);
   button = createButton("start session");
   button.position(20, 20);
@@ -99,9 +121,8 @@ function startSession() {
     modules[i].isActivated = false;
   }
   //!!!NOT STOPPING 
-  Tone.Transport.stop();
+  //Tone.Transport.stop();
 }
-
 
 
 function draw() {
@@ -110,6 +131,25 @@ function draw() {
     modules[i].display();
   }
 
+  //module numbers
+  for (i = 0; i < 10; i++) {
+    fill(255);
+    if (i < 5) {
+      text(i + 1, windowWidth / 2 - moduleW * 9 / 2 + i * 2 * moduleW + 15, windowHeight / 2 - moduleH + 20);
+    } else {
+      text(i + 1, windowWidth / 2 - moduleW * 9 / 2 + (i - 5) * 2 * moduleW + 15, windowHeight / 2 + moduleH + 20);
+    }
+  }
+
+  //waiver
+  text("waiver:",10, windowHeight*5/6);
+  text("Warning: never take off your headset when the session is in progress, as it might cause irreversible brain damage.", 10, windowHeight*5/6+20);
+  if(stage == "ACTIVATION"){
+    fill(255);
+  }else{
+    fill(255,0,0);
+  }
+  text("In case of any discomfort or malfunction, you can deactivate the machine in the following sequence: 1, 3, 5, 7, 9, 2, 4, 6, 8, 10...", 10, windowHeight * 5/6+40)
   //track number of activated modules
   numOfActivated = modules.filter(_module => {
     return _module.isActivated === true
@@ -123,54 +163,12 @@ function draw() {
   }
   // console.log("stage = " + stage);
 
-  if (stage == "DEACTIVATION") {
+  //when deactivation stage + a10 stops, trigger uploading voice timer
+  if (stage == "DEACTIVATION" && !a10.isPlaying()) {
     startUploadingTimer();
-    // let len = a10.duration();
-    // a10.addCue(len - 0.5, startUploadingTimer);
-  }
-  // console.log(uploadingVoiceIsPlaying());
-
-}
-
-// function startUploadingTimer() {
-//   counter = 0;
-//   timer = setInterval(playUploadingVoice, 10000);
-//   console.log("Uploading timer starts");
-// }
-
-// //play uploading voices at 5 sec interval
-// function playUploadingVoice() {
-//   uploadingVoice[counter].play();
-//   counter++;
-//   if (counter == uploadingVoice.length) {
-//     clearInterval(timer);
-//   }
-//   console.log("uploading")
-// }
-
-
-function startUploadingTimer() {
-  console.log(millis()-lastTime);
-  if (millis() - lastTime > 7000 && counter < uploadingVoice.length) {
-    console.log("uploading")
-    uploadingVoice[counter].play();
-    counter++;
-    lastTime = millis();
-  }else if (d9.isPlaying() || d7.isPlaying() || d5.isPlaying() || d3.isPlaying() || d1.isPlaying()) {
-    lastTime = millis();
-  }
-  console.log("Uploading timer starts");
-}
-
-
-function uploadingVoiceIsPlaying() {
-  let numOfUploadingVoices = uploadingVoice.filter(_voice => _voice.isPlaying() == true).length;
-  if (numOfUploadingVoices == 1) {
-    return true;
-  } else if (numOfUploadingVoices == 0) {
-    return false;
   }
 }
+
 
 class Module {
   constructor(_x, _y) {
@@ -237,138 +235,133 @@ function mousePressed() {
   //activating stage:
   if (stage == "ACTIVATION") {
 
-    if (numOfActivated == 1 - 1 && !a0.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+    if (numOfActivated == 1 - 1 && !a0.isPlaying()) {
+      activateModules()
       Tone.Transport.start();
       s1.start();
       a1.play();
     } else if (numOfActivated == 2 - 1 && !a1.isPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+      activateModules()
       s2.start();
     } else if (numOfActivated == 3 - 1 && !a1.isPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+      activateModules()
       s3.start();
       a3.play();
     } else if (numOfActivated == 4 - 1 && !a3.isPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+      activateModules()
       s4.start();
     } else if (numOfActivated == 5 - 1 && !a3.isPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+      activateModules()
       a5.play();
       s5.start();
     } else if (numOfActivated == 6 - 1 && !a5.isPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+      activateModules()
       s6.start();
     } else if (numOfActivated == 7 - 1 && !a5.isPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+      activateModules()
+      s7.start();
       a7.play();
     } else if (numOfActivated == 8 - 1 && !a7.isPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+      activateModules()
     } else if (numOfActivated == 9 - 1 && !a7.isPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+      activateModules()
       a9.play();
     } else if (numOfActivated == 10 - 1 && !a9.isPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].activate(mouseX, mouseY);
-      }
+      activateModules()
       a10.play();
-
+      s10.start();
+      s1.stop();
+      s2.stop();
+      s3.stop();
+      s4.stop();
+      s5.stop();
+      s6.stop();
+      s7.stop();
       lastTime = millis();
       counter = 0
-      //add a delay of duration(a10) before starting uploading timer
-      let len = a10.duration();
-      a10.addCue(len - 0.5, timerStarted());
     }
 
 
-    // let index = modules.findIndex(module => module.isActivated);
-    // console.log(index);
+
   }
   else if (stage == "DEACTIVATION") {  //13579 246810
+    
     for (i = 0; i < 10; i++) {
       modulePosition = modules[i].moduleClicked(mouseX, mouseY);
       if (modulePosition) {
-        // console.log(modulePosition);
-        // console.log(modulePosition.y)
         if (modulePosition.y == windowHeight / 2 - 2 * moduleH) {
-          j = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW);
+          index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW);
         } else if (modulePosition.y == windowHeight / 2) {
-          j = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW) + 5;
+          index = (modulePosition.x - windowWidth / 2 + moduleW * 9 / 2) / (2 * moduleW) + 5;
         }
-        console.log(j + 1);
+        console.log(index + 1);
       }
     }
 
 
     if (numOfActivated == 10 && !a10.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
       d9.play();
     } else if (numOfActivated == 9 && !d9.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
     } else if (numOfActivated == 8 && !d9.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
       d7.play();
     } else if (numOfActivated == 7 && !d7.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
     } else if (numOfActivated == 6 && !d7.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
       d5.play();
     } else if (numOfActivated == 5 && !d5.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
     } else if (numOfActivated == 4 && !d5.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
       d3.play();
     } else if (numOfActivated == 3 && !d3.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
     } else if (numOfActivated == 2 && !d3.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
       d1.play();
     } else if (numOfActivated == 1 && !d1.isPlaying() && !uploadingVoiceIsPlaying()) {
-      for (i = 0; i < 10; i++) {
-        modules[i].deactivate(mouseX, mouseY);
-      }
+      deactivateModules()
     }
-
   }
-
 }
 
-function timerStarted(){
-  return true;
+
+function activateModules() {
+  for (i = 0; i < 10; i++) {
+    modules[i].activate(mouseX, mouseY);
+  }
+}
+function deactivateModules() {
+  for (i = 0; i < 10; i++) {
+    modules[i].deactivate(mouseX, mouseY);
+  }
+}
+
+function startUploadingTimer() {
+  console.log("Uploading timer starts");
+  console.log(millis() - lastTime);
+  if (millis() - lastTime > 7000 && counter < uploadingVoice.length) {
+    console.log("uploading in progess")
+    uploadingVoice[counter].play();
+    if(counter < uploadingSound.length){
+      uploadingSound[counter].start();
+    }
+    counter++;
+    lastTime = millis();
+  } else if (d9.isPlaying() || d7.isPlaying() || d5.isPlaying() || d3.isPlaying() || d1.isPlaying()) {
+    lastTime = millis();
+  }
+}
+
+
+function uploadingVoiceIsPlaying() {
+  let numOfUploadingVoices = uploadingVoice.filter(_voice => _voice.isPlaying() == true).length;
+  if (numOfUploadingVoices == 1) {
+    return true;
+  } else if (numOfUploadingVoices == 0) {
+    return false;
+  }
 }
