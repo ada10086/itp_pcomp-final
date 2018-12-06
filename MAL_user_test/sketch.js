@@ -6,9 +6,13 @@ var stage; //activation or deactivation
 var numOfActivated; //number of activated modules
 var modulePosition;  //clicked module position vector for calculating index
 var index; //index of clicked module
+var showSequence = false;
+var fullyDeactivated = false;
 
 var counter; //counter for uploading stage voice
 var lastTime, currentTime;  //uploading stage voice timer
+
+var lastTimeSeq, currentTimeSeq; //for blinking deactivating sequence
 
 //voice:
 var a1, a3, a5, a7, a9, a10, urg1, urg2; //activation stage + urging voice
@@ -18,6 +22,7 @@ var uploadingSound = []; //uploading stage sound track array
 var d1, d3, d5, d7, d9; //deactivation stage voice
 
 //sound:
+//activation
 var s1 = new Tone.Player("./SoundTest/activation/wave.mp3").toMaster();
 s1.volume.value = -2;
 s1.loop = true;
@@ -39,10 +44,19 @@ s6.loop = true;
 var s7 = new Tone.Player("./SoundTest/activation/drone loop.wav").toMaster();
 s7.volume.value = -20;
 s7.loop = true;
-var s10 = new Tone.Player("./SoundTest/deactivation/eflat pulse.mp3").toMaster();
-s10.volume.value = -10;
+// var s10 = new Tone.Player("./SoundTest/deactivation/eflat pulse.mp3").toMaster();
+var s10 = new Tone.Player("./SoundTest/activation/upload.wav").toMaster();
+s10.volume.value = -20;
 s10.loop = true;
 
+//deactivation:
+ampEnv = new Tone.AmplitudeEnvelope({
+  "attack": 0.05,
+  "decay": 0.05,
+  "sustain": 0.05,
+  "release": 0.05
+}).toMaster();
+var noise = new Tone.Noise("white").connect(ampEnv).start(); //noise for interrupting uploading
 var s11 = new Tone.Player("./SoundTest/deactivation/analog extreme.wav").toMaster();
 s11.volume.value = -10;
 s11.loop = true;
@@ -55,22 +69,29 @@ s13.loop = true;
 var s14 = new Tone.Player("./SoundTest/deactivation/tension synths.mp3").toMaster();
 s14.volume.value = -10;
 s14.loop = true;
+var osc1 = new Tone.Oscillator(300, "square").toMaster();
+osc1.volume.value = -30; 
+var osc2 = new Tone.Oscillator(340, "sine").toMaster();
+osc2.volume.value = -30; 
+var osc3 = new Tone.Oscillator(500, "triangle").toMaster();
+osc3.volume.value = -30; 
 
 function preload() {
-  // a0 = loadSound("./ActivationV2/a0.mp3");
-  // a1 = loadSound("./ActivationV2/a1.mp3");
-  // a3 = loadSound("./ActivationV2/a3.mp3");
-  // a5 = loadSound("./ActivationV2/a5.mp3");
-  // a7 = loadSound("./ActivationV2/a7.mp3");
-  // a9 = loadSound("./ActivationV2/a9.mp3");
-  // a10 = loadSound("./ActivationV2/a10.mp3");
-  // urg1 = loadSound("./ActivationV2/urging 1.mp3");
-  // urg2 = loadSound("./ActivationV2/urging 2.mp3");
-  // d9 = loadSound("./Deactivation/d9.mp3");
-  // d7 = loadSound("./Deactivation/d7.mp3");
-  // d5 = loadSound("./Deactivation/d5.mp3");
-  // d3 = loadSound("./Deactivation/d3.mp3");
-  // d1 = loadSound("./Deactivation/d1.mp3");
+  a0 = loadSound("./ActivationV3/a0.mp3");
+  a1 = loadSound("./ActivationV3/a1.mp3");
+  a3 = loadSound("./ActivationV3/a3.mp3");
+  a5 = loadSound("./ActivationV3/a5.mp3");
+  a7 = loadSound("./ActivationV3/a7.mp3");
+  a9 = loadSound("./ActivationV3/a9.mp3");
+  a10 = loadSound("./ActivationV3/a10.mp3");
+  urg1 = loadSound("./ActivationV3/urging 1.mp3");
+  urg2 = loadSound("./ActivationV3/urging 2.mp3");
+  d9 = loadSound("./Deactivation/d9.mp3");
+  d7 = loadSound("./Deactivation/d7.mp3");
+  d5 = loadSound("./Deactivation/d5.mp3");
+  d3 = loadSound("./Deactivation/d3.mp3");
+  d1 = loadSound("./Deactivation/d1.mp3");
+  d0 = loadSound("./Deactivation/d0.mp3");
 
   u1 = loadSound("./Uploading/1initialize.mp3");
   u2 = loadSound("./Uploading/2scanning.mp3");
@@ -80,18 +101,19 @@ function preload() {
   u6 = loadSound("./Uploading/Congratulations.mp3");
 
   // //testing voice files
-  a0 = loadSound("./ActivationTest/a0.mp3");
-  a1 = loadSound("./ActivationTest/a1.mp3");
-  a3 = loadSound("./ActivationTest/a3.mp3");
-  a5 = loadSound("./ActivationTest/a5.mp3");
-  a7 = loadSound("./ActivationTest/a7.mp3");
-  a9 = loadSound("./ActivationTest/a9.mp3");
-  a10 = loadSound("./ActivationTest/a10.mp3");
-  d9 = loadSound("./DeactivationTest/d9.mp3");
-  d7 = loadSound("./DeactivationTest/d7.mp3");
-  d5 = loadSound("./DeactivationTest/d5.mp3");
-  d3 = loadSound("./DeactivationTest/d3.mp3");
-  d1 = loadSound("./DeactivationTest/d1.mp3");
+  // a0 = loadSound("./ActivationTest/a0.mp3");
+  // a1 = loadSound("./ActivationTest/a1.mp3");
+  // a3 = loadSound("./ActivationTest/a3.mp3");
+  // a5 = loadSound("./ActivationTest/a5.mp3");
+  // a7 = loadSound("./ActivationTest/a7.mp3");
+  // a9 = loadSound("./ActivationTest/a9.mp3");
+  // a10 = loadSound("./ActivationTest/a10.mp3");
+  // d9 = loadSound("./DeactivationTest/d9.mp3");
+  // d7 = loadSound("./DeactivationTest/d7.mp3");
+  // d5 = loadSound("./DeactivationTest/d5.mp3");
+  // d3 = loadSound("./DeactivationTest/d3.mp3");
+  // d1 = loadSound("./DeactivationTest/d1.mp3");
+  // d0 = loadSound("./Deactivation/d0.mp3");
 }
 
 function setup() {
@@ -142,14 +164,14 @@ function draw() {
   }
 
   //waiver
-  text("waiver:", 10, windowHeight * 5 / 6);
-  text("Warning: never take off your headset when the session is in progress, as it might cause irreversible brain damage.", 10, windowHeight * 5 / 6 + 20);
-  if (stage == "ACTIVATION") {
-    fill(255);
-    text("In case of any discomfort or malfunction, you can deactivate the machine in the following sequence: 1, 3, 5, 7, 9, 2, 4, 6, 8, 10...", 10, windowHeight * 5 / 6 + 40);
-  } else {
+  textSize(20);
+  text("waiver:", 10, windowHeight * 5 / 6 - 60);
+  text("Warning: never take off your headset when the session is in progress, as it might cause irreversible brain damage.", 10, windowHeight * 5 / 6 - 30);
+  text("In case of any detected discomfort or malfunction, emergency instruction will light up.", 10, windowHeight * 5 / 6);
+  text("You can follow the instruction to deactivate the program.", 10, windowHeight * 5 / 6 + 30);
+  if (showSequence) {
     fill(255, 0, 0);
-    text("In case of any discomfort or malfunction, you can deactivate the machine in the following sequence: 1, 3, 5, 7, 9, 2, 4, 6, 8, 10...", 10, windowHeight * 5 / 6 + 40)
+    text("deactivating sequence: 1, 7, 3, 5, 9, 2, 10, 4, 6, 8...", 10, windowHeight * 5 / 6 + 60);
   }
   //track number of activated modules
   numOfActivated = modules.filter(_module => {
@@ -167,6 +189,7 @@ function draw() {
   //when deactivation stage + a10 stops, trigger uploading voice timer
   if (stage == "DEACTIVATION" && !a10.isPlaying()) {
     startUploadingTimer();
+    showSequence = true;
   }
 
   for (i = 0; i < 10; i++) {
@@ -185,16 +208,20 @@ class Module {
     this.wasActivated = false;
   }
   display() {
-    if (numOfActivated < 9) {
-      if (stage == "ACTIVATION") {
+    if (stage == "ACTIVATION") {
+      if (numOfActivated < 9) {
         if (!this.isActivated) {
-          fill(255, 255, 255);
+          fill(255, 255, 255); //starting color
         } else {
-          fill(0, 255, 0)
+          fill(0, 255, 0); //activated color
+        }
+      } else if (numOfActivated == 9) {
+        if (!this.isActivated) {
+          fill(255, 255, 255)
+        } else {
+          fill(random(255), random(255), random(255));
         }
       }
-    } else if (numOfActivated == 9) {
-      fill(random(255), random(255), random(255));
     }
 
     if (stage == "DEACTIVATION") {
@@ -251,50 +278,50 @@ function mousePressed() {
       //activating stage:
       if (stage == "ACTIVATION") {
 
-        if (numOfActivated == 1 - 1  && !modules[i].isActivated && !a0.isPlaying()) {
+        if (numOfActivated == 1 - 1 && !modules[i].isActivated && !a0.isPlaying()) {
           // activateModules();
-            modules[i].activate(mouseX,mouseY);
-            Tone.Transport.start();
-            s1.start();
-            a1.play();
+          modules[i].activate(mouseX, mouseY);
+          Tone.Transport.start();
+          s1.start();
+          a1.play(3);
         } else if (numOfActivated == 2 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
           // activateModules();
-          modules[i].activate(mouseX,mouseY);
+          modules[i].activate(mouseX, mouseY);
           s2.start();
         } else if (numOfActivated == 3 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
           // activateModules();
-          modules[i].activate(mouseX,mouseY);
+          modules[i].activate(mouseX, mouseY);
           s3.start();
-          a3.play();
+          a3.play(1);
         } else if (numOfActivated == 4 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
           // activateModules();
-          modules[i].activate(mouseX,mouseY);
+          modules[i].activate(mouseX, mouseY);
           s4.start();
         } else if (numOfActivated == 5 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
           // activateModules();
-          modules[i].activate(mouseX,mouseY);
-          a5.play();
+          modules[i].activate(mouseX, mouseY);
+          a5.play(2);
           s5.start();
         } else if (numOfActivated == 6 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
           // activateModules();
-          modules[i].activate(mouseX,mouseY);
+          modules[i].activate(mouseX, mouseY);
           s6.start();
         } else if (numOfActivated == 7 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
           // activateModules();
-          modules[i].activate(mouseX,mouseY);
+          modules[i].activate(mouseX, mouseY);
           s7.start();
-          a7.play();
+          a7.play(1);
         } else if (numOfActivated == 8 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
           // activateModules();
-          modules[i].activate(mouseX,mouseY);
+          modules[i].activate(mouseX, mouseY);
         } else if (numOfActivated == 9 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
           // activateModules();
-          modules[i].activate(mouseX,mouseY);
+          modules[i].activate(mouseX, mouseY);
           a9.play();
         } else if (numOfActivated == 10 - 1 && !modules[i].isActivated && !a9.isPlaying()) {
           // activateModules();
-          modules[i].activate(mouseX,mouseY);
-          a10.play();
+          modules[i].activate(mouseX, mouseY);
+          a10.play(3);
           s10.start();
           s1.stop();
           s2.stop();
@@ -326,74 +353,77 @@ function mousePressed() {
         // }
 
         if (numOfActivated == 10 && !a10.isPlaying() && modules[0].isActivated && modules[0].mouseClickedOnModule(mouseX, mouseY) && modules[0].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
           modules[0].deactivate(mouseX, mouseY);
-          d9.playMode('untilDone')
+          d9.playMode()
           d9.play();
-        } else if (numOfActivated == 9 && !d9.isPlaying() && modules[2].isActivated && modules[2].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
-          modules[2].deactivate(mouseX, mouseY);
-        } else if (numOfActivated == 8 && !d9.isPlaying() && modules[4].isActivated && modules[4].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
-          modules[4].deactivate(mouseX, mouseY);
-          // d7.playMode('untilDone')
-          d7.play();
-        } else if (numOfActivated == 7 && !d7.isPlaying() && modules[6].isActivated && modules[6].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
+        } else if (numOfActivated == 9 && modules[6].isActivated && modules[6].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
           modules[6].deactivate(mouseX, mouseY);
-        } else if (numOfActivated == 6 && !d7.isPlaying() && modules[8].isActivated && modules[8].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
+          if (d9.isPlaying()) {
+            d9.stop();
+            ampEnv.triggerAttackRelease("0.3");
+          }
+        } else if (numOfActivated == 8 && modules[2].isActivated && modules[2].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          modules[2].deactivate(mouseX, mouseY);
+          d7.play();
+        } else if (numOfActivated == 7 && modules[4].isActivated && modules[4].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          modules[4].deactivate(mouseX, mouseY);
+          if (d7.isPlaying()) {
+            d7.stop();
+            ampEnv.triggerAttackRelease("0.3");
+          }
+        } else if (numOfActivated == 6 && modules[8].isActivated && modules[8].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
           modules[8].deactivate(mouseX, mouseY);
-          // d5.playMode('untilDone')
           d5.play();
-        } else if (numOfActivated == 5 && !d5.isPlaying() && modules[1].isActivated && modules[1].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
+        } else if (numOfActivated == 5 && modules[1].isActivated && modules[1].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
           modules[1].deactivate(mouseX, mouseY);
-        } else if (numOfActivated == 4 && !d5.isPlaying() && modules[3].isActivated && modules[3].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
-          modules[3].deactivate(mouseX, mouseY);
-          // d3.playMode('untilDone')
-          d3.play();
-        } else if (numOfActivated == 3 && !d3.isPlaying() && modules[5].isActivated && modules[5].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
-          modules[5].deactivate(mouseX, mouseY);
-        } else if (numOfActivated == 2 && !d3.isPlaying() && modules[7].isActivated && modules[7].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
-          // d1.playMode('untilDone')
-          d1.play();
-          modules[7].deactivate(mouseX, mouseY);
-        } else if (numOfActivated == 1 && !d1.isPlaying() && modules[9].isActivated && modules[9].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
-          // deactivateModules()
+          if (d5.isPlaying()) {
+            d5.stop();
+            ampEnv.triggerAttackRelease("0.3");
+          }
+        } else if (numOfActivated == 4 && modules[9].isActivated && modules[9].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
           modules[9].deactivate(mouseX, mouseY);
-
+          d3.play();
+        } else if (numOfActivated == 3 && modules[3].isActivated && modules[3].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          modules[3].deactivate(mouseX, mouseY);
+          if (d3.isPlaying()) {
+            d3.stop();
+            ampEnv.triggerAttackRelease("0.3");
+          }
+        } else if (numOfActivated == 2 && modules[5].isActivated && modules[5].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          d1.play();
+          modules[5].deactivate(mouseX, mouseY);
+        } else if (numOfActivated == 1 && !d1.isPlaying() && modules[7].isActivated && modules[7].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
+          modules[7].deactivate(mouseX, mouseY);
+          fullyDeactivated = true;
+          s11.stop();
+          s12.stop();
+          s13.stop();
+          s14.stop();
+          s10.stop();
+          ampEnv.triggerAttackRelease("0.3");
+          osc1.start();
+          osc2.start();
+          osc3.start();
+          d0.play(1);
+          if(!d0.isPlaying){
+            osc1.stop();
+            osc2.stop();
+            osc3.stop();
+          }
         }
       }
     }
   }
 }
 
-// activate without sequence
-// function activateModules() {
-//   for (i = 0; i < 10; i++) {
-//     modules[i].activate(mouseX, mouseY);
-//   }
-// }
-
-// //deactivate without sequence
-// function deactivateModules() {
-//   for (i = 0; i < 10; i++) {
-//     modules[i].deactivate(mouseX, mouseY);
-//   }
-// }
-
 function startUploadingTimer() {
   // console.log("Uploading timer starts");
   // console.log(millis() - lastTime);
-  if (millis() - lastTime > 7000 && counter < uploadingVoice.length) {
+  if (millis() - lastTime > 7000 && counter < uploadingVoice.length && !fullyDeactivated) {
     console.log("uploading in progess")
     uploadingVoice[counter].play();
     if (counter < uploadingSound.length) {
-      s10.stop();
+      // s10.stop();
       uploadingSound[counter].start();
     }
     counter++;
@@ -412,5 +442,18 @@ function uploadingVoiceIsPlaying() {
     return false;
   }
 }
+
+// activate without sequence
+// function activateModules() {
+//   for (i = 0; i < 10; i++) {
+//     modules[i].activate(mouseX, mouseY);
+//   }
+// }
+// //deactivate without sequence
+// function deactivateModules() {
+//   for (i = 0; i < 10; i++) {
+//     modules[i].deactivate(mouseX, mouseY);
+//   }
+// }
 
 
