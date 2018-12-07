@@ -4,16 +4,15 @@ var moduleH = 150;
 var button; //start/reset button
 var stage; //activation or deactivation
 var numOfActivated; //number of activated modules
-var modulePosition;  //clicked module position vector for calculating index
-var index; //index of clicked module
 var showSequence = false;
 var fullyDeactivated = false;
-
-var counter; //counter for uploading stage voice
-var lastTime, currentTime;  //uploading stage voice timer
-
-var lastTimeSeq, currentTimeSeq; //for blinking deactivating sequence
-
+// var modulePosition;  //clicked module position vector for calculating index
+// var index; //index of clicked module
+var lastTime; //timer for urging
+var uploadLastTime;  //uploading stage voice timer
+var counter;   //counter for uploading stage voice
+var seqLastTime; //for blinking deactivating sequence
+var seqLit = false;
 //voice:
 var a1, a3, a5, a7, a9, a10, urg1, urg2; //activation stage + urging voice
 var uploadingVoice = []; //uploading stage voice array
@@ -41,11 +40,11 @@ s5.loop = true;
 var s6 = new Tone.Player("./SoundTest/activation/sequence.mp3").toMaster();
 s6.volume.value = -10;
 s6.loop = true;
-var s7 = new Tone.Player("./SoundTest/activation/drone loop.wav").toMaster();
+var s7 = new Tone.Player("./SoundTest/activation/drone loop.mp3").toMaster();
 s7.volume.value = -20;
 s7.loop = true;
 // var s10 = new Tone.Player("./SoundTest/deactivation/eflat pulse.mp3").toMaster();
-var s10 = new Tone.Player("./SoundTest/activation/upload.wav").toMaster();
+var s10 = new Tone.Player("./SoundTest/activation/upload.mp3").toMaster();
 s10.volume.value = -20;
 s10.loop = true;
 
@@ -57,7 +56,7 @@ ampEnv = new Tone.AmplitudeEnvelope({
   "release": 0.05
 }).toMaster();
 var noise = new Tone.Noise("white").connect(ampEnv).start(); //noise for interrupting uploading
-var s11 = new Tone.Player("./SoundTest/deactivation/analog extreme.wav").toMaster();
+var s11 = new Tone.Player("./SoundTest/deactivation/analog extreme.mp3").toMaster();
 s11.volume.value = -10;
 s11.loop = true;
 var s12 = new Tone.Player("./SoundTest/deactivation/mri1.mp3").toMaster();
@@ -70,11 +69,11 @@ var s14 = new Tone.Player("./SoundTest/deactivation/tension synths.mp3").toMaste
 s14.volume.value = -10;
 s14.loop = true;
 var osc1 = new Tone.Oscillator(300, "square").toMaster();
-osc1.volume.value = -30; 
+osc1.volume.value = -30;
 var osc2 = new Tone.Oscillator(340, "sine").toMaster();
-osc2.volume.value = -30; 
+osc2.volume.value = -30;
 var osc3 = new Tone.Oscillator(500, "triangle").toMaster();
-osc3.volume.value = -30; 
+osc3.volume.value = -30;
 
 function preload() {
   // a0 = loadSound("./ActivationV3/a0.mp3");
@@ -84,8 +83,8 @@ function preload() {
   // a7 = loadSound("./ActivationV3/a7.mp3");
   // a9 = loadSound("./ActivationV3/a9.mp3");
   // a10 = loadSound("./ActivationV3/a10.mp3");
-  // urg1 = loadSound("./ActivationV3/urging 1.mp3");
-  // urg2 = loadSound("./ActivationV3/urging 2.mp3");
+  urg1 = loadSound("./ActivationV3/urging 1.mp3");
+  urg2 = loadSound("./ActivationV3/urging 2.mp3");
   // d9 = loadSound("./Deactivation/d9.mp3");
   // d7 = loadSound("./Deactivation/d7.mp3");
   // d5 = loadSound("./Deactivation/d5.mp3");
@@ -100,7 +99,7 @@ function preload() {
   u5 = loadSound("./Uploading/5uploading.mp3");
   u6 = loadSound("./Uploading/Congratulations.mp3");
 
-  // //testing voice files
+  // // //testing voice files
   a0 = loadSound("./ActivationTest/a0.mp3");
   a1 = loadSound("./ActivationTest/a1.mp3");
   a3 = loadSound("./ActivationTest/a3.mp3");
@@ -113,7 +112,7 @@ function preload() {
   d5 = loadSound("./DeactivationTest/d5.mp3");
   d3 = loadSound("./DeactivationTest/d3.mp3");
   d1 = loadSound("./DeactivationTest/d1.mp3");
-  d0 = loadSound("./Deactivation/d0.mp3");
+  d0 = loadSound("./DeactivationTest/d0.mp3");
 }
 
 function setup() {
@@ -138,12 +137,13 @@ function startSession() {
   console.log("start session");
   a0.play();
   stage = "ACTIVATION";
+  showSequence = false;
+
   //deactivate all modules to start/reset
   for (i = 0; i < 10; i++) {
     modules[i].isActivated = false;
   }
-  //!!!NOT STOPPING 
-  //Tone.Transport.stop();
+  lastTime = millis();
 }
 
 
@@ -165,28 +165,42 @@ function draw() {
 
   //waiver
   textSize(20);
+  fill(255, 0, 0);
   text("waiver:", 10, windowHeight * 5 / 6 - 60);
+  fill(255);
   text("Warning: never take off your headset when the session is in progress, as it might cause irreversible brain damage.", 10, windowHeight * 5 / 6 - 30);
   text("In case of any detected discomfort or malfunction, emergency instruction will light up.", 10, windowHeight * 5 / 6);
-  if (showSequence) {
-    
-    fill(255, 0, 0);
+  if (showSequence) {   //blink white and red
+    if (millis() - seqLastTime > 1000) {
+      seqLit = !seqLit
+      seqLastTime = millis();
+    }
+    if (seqLit) {
+      fill(255, 0, 0);
+    } else {
+      fill(255);
+    }
     text("To shut down the program, deactivate the modules in the following sequence: 1, 7, 3, 5, 9, 2, 10, 4, 6, 8", 10, windowHeight * 5 / 6 + 30);
   }
+  // console.log(millis() - seqLastTime);
+
   //track number of activated modules
   numOfActivated = modules.filter(_module => {
     return _module.isActivated === true
   }).length;
-  // console.log("numOfActivated:" + numOfActivated);
+
+
 
   if (stage == "ACTIVATION") {
+    if (numOfActivated > 0 && numOfActivated < 9) {
+      startUrgingTimer();
+    }
     if (numOfActivated == 10) {
       stage = "DEACTIVATION";
     }
   }
-  // console.log("stage = " + stage);
 
-  //when deactivation stage + a10 stops, trigger uploading voice timer
+  //when deactivation stage + a10 stops, trigger uploading voice timer, blink deactivation sequence text
   if (stage == "DEACTIVATION" && !a10.isPlaying()) {
     startUploadingTimer();
     showSequence = true;
@@ -194,6 +208,12 @@ function draw() {
 
   for (i = 0; i < 10; i++) {
     modules[i].wasActivated = modules[i].isActivated;
+  }
+  if (fullyDeactivated && !d0.isPlaying()) {
+    console.log('shutdown');
+    osc1.stop();
+    osc2.stop();
+    osc3.stop();
   }
 }
 
@@ -238,7 +258,6 @@ class Module {
     if (this.mouseClickedOnModule(_mx, _my)) {
       if (!this.isActivated) {
         this.isActivated = true;
-        // console.log("activated");
       }
     }
   }
@@ -247,8 +266,15 @@ class Module {
     if (this.mouseClickedOnModule(_mx, _my)) {
       if (this.isActivated) {
         this.isActivated = false;
-        // console.log("deactivated");
       }
+    }
+  }
+
+  mouseClickedOnModule(_mx, _my) {
+    if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -260,14 +286,6 @@ class Module {
   //     return false;
   //   }
   // }
-
-  mouseClickedOnModule(_mx, _my) {
-    if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
-      return true;
-    } else {
-      return false;
-    }
-  }
 }
 
 function mousePressed() {
@@ -277,35 +295,50 @@ function mousePressed() {
 
       //activating stage:
       if (stage == "ACTIVATION") {
-
         if (numOfActivated == 1 - 1 && !modules[i].isActivated && !a0.isPlaying()) {
           modules[i].activate(mouseX, mouseY);
           Tone.Transport.start();
           s1.start();
           a1.play(3);
+          lastTime = millis(); //urging timer
+
         } else if (numOfActivated == 2 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
           modules[i].activate(mouseX, mouseY);
           s2.start();
+          lastTime = millis(); //urging timer
+
         } else if (numOfActivated == 3 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
           modules[i].activate(mouseX, mouseY);
           s3.start();
           a3.play(1);
+          lastTime = millis(); //urging timer
+
         } else if (numOfActivated == 4 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
           modules[i].activate(mouseX, mouseY);
           s4.start();
+          lastTime = millis(); //urging timer
+
         } else if (numOfActivated == 5 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
           modules[i].activate(mouseX, mouseY);
           a5.play(2);
           s5.start();
+          lastTime = millis(); //urging timer
+
         } else if (numOfActivated == 6 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
           modules[i].activate(mouseX, mouseY);
           s6.start();
+          lastTime = millis(); //urging timer
+
         } else if (numOfActivated == 7 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
           modules[i].activate(mouseX, mouseY);
           s7.start();
           a7.play(1);
+          lastTime = millis(); //urging timer
+
         } else if (numOfActivated == 8 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
           modules[i].activate(mouseX, mouseY);
+          lastTime = millis(); //urging timer
+
         } else if (numOfActivated == 9 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
           modules[i].activate(mouseX, mouseY);
           a9.play();
@@ -320,8 +353,9 @@ function mousePressed() {
           s5.stop();
           s6.stop();
           s7.stop();
-          lastTime = millis();
+          uploadLastTime = millis();
           counter = 0;
+          seqLastTime = millis();
         }
 
 
@@ -394,21 +428,27 @@ function mousePressed() {
           osc2.start();
           osc3.start();
           d0.play(1);
-          if(!d0.isPlaying){
-            osc1.stop();
-            osc2.stop();
-            osc3.stop();
-          }
         }
       }
     }
   }
 }
 
+function startUrgingTimer() {
+  console.log("urging timer starts");
+  console.log(millis() - lastTime);
+  if (millis() - lastTime > 5000 && !fullyDeactivated) {
+    urg1.play();
+    lastTime = millis();
+  } else if (a1.isPlaying() || a3.isPlaying() || a5.isPlaying() || a7.isPlaying() || a9.isPlaying() || a10.isPlaying()) {
+    lastTime = millis();
+  }
+}
+
 function startUploadingTimer() {
   // console.log("Uploading timer starts");
-  // console.log(millis() - lastTime);
-  if (millis() - lastTime > 7000 && counter < uploadingVoice.length && !fullyDeactivated) {
+  // console.log(millis() - uploadLastTime);
+  if (millis() - uploadLastTime > 7000 && counter < uploadingVoice.length && !fullyDeactivated) {
     console.log("uploading in progess")
     uploadingVoice[counter].play();
     if (counter < uploadingSound.length) {
@@ -416,9 +456,11 @@ function startUploadingTimer() {
       uploadingSound[counter].start();
     }
     counter++;
-    lastTime = millis();
+    uploadLastTime = millis();
   } else if (d9.isPlaying() || d7.isPlaying() || d5.isPlaying() || d3.isPlaying() || d1.isPlaying()) {
-    lastTime = millis();
+    uploadLastTime = millis();
+  } else if (counter > uploadingVoice.length) {
+    s10.stop();
   }
 }
 
@@ -432,17 +474,7 @@ function uploadingVoiceIsPlaying() {
   }
 }
 
-// activate without sequence
-// function activateModules() {
-//   for (i = 0; i < 10; i++) {
-//     modules[i].activate(mouseX, mouseY);
-//   }
-// }
-// //deactivate without sequence
-// function deactivateModules() {
-//   for (i = 0; i < 10; i++) {
-//     modules[i].deactivate(mouseX, mouseY);
-//   }
-// }
+
+
 
 
