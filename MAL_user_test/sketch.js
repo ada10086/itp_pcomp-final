@@ -169,6 +169,7 @@ function draw() {
   text("Warning: never take off your headset when the session is in progress, as it might cause irreversible brain damage.", 10, windowHeight * 5 / 6 - 30);
   text("In case of any detected discomfort or malfunction, emergency instruction will light up.", 10, windowHeight * 5 / 6);
   if (showSequence) {
+    
     fill(255, 0, 0);
     text("To shut down the program, deactivate the modules in the following sequence: 1, 7, 3, 5, 9, 2, 10, 4, 6, 8", 10, windowHeight * 5 / 6 + 30);
   }
