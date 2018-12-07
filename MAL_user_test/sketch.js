@@ -77,21 +77,21 @@ var osc3 = new Tone.Oscillator(500, "triangle").toMaster();
 osc3.volume.value = -30; 
 
 function preload() {
-  a0 = loadSound("./ActivationV3/a0.mp3");
-  a1 = loadSound("./ActivationV3/a1.mp3");
-  a3 = loadSound("./ActivationV3/a3.mp3");
-  a5 = loadSound("./ActivationV3/a5.mp3");
-  a7 = loadSound("./ActivationV3/a7.mp3");
-  a9 = loadSound("./ActivationV3/a9.mp3");
-  a10 = loadSound("./ActivationV3/a10.mp3");
-  urg1 = loadSound("./ActivationV3/urging 1.mp3");
-  urg2 = loadSound("./ActivationV3/urging 2.mp3");
-  d9 = loadSound("./Deactivation/d9.mp3");
-  d7 = loadSound("./Deactivation/d7.mp3");
-  d5 = loadSound("./Deactivation/d5.mp3");
-  d3 = loadSound("./Deactivation/d3.mp3");
-  d1 = loadSound("./Deactivation/d1.mp3");
-  d0 = loadSound("./Deactivation/d0.mp3");
+  // a0 = loadSound("./ActivationV3/a0.mp3");
+  // a1 = loadSound("./ActivationV3/a1.mp3");
+  // a3 = loadSound("./ActivationV3/a3.mp3");
+  // a5 = loadSound("./ActivationV3/a5.mp3");
+  // a7 = loadSound("./ActivationV3/a7.mp3");
+  // a9 = loadSound("./ActivationV3/a9.mp3");
+  // a10 = loadSound("./ActivationV3/a10.mp3");
+  // urg1 = loadSound("./ActivationV3/urging 1.mp3");
+  // urg2 = loadSound("./ActivationV3/urging 2.mp3");
+  // d9 = loadSound("./Deactivation/d9.mp3");
+  // d7 = loadSound("./Deactivation/d7.mp3");
+  // d5 = loadSound("./Deactivation/d5.mp3");
+  // d3 = loadSound("./Deactivation/d3.mp3");
+  // d1 = loadSound("./Deactivation/d1.mp3");
+  // d0 = loadSound("./Deactivation/d0.mp3");
 
   u1 = loadSound("./Uploading/1initialize.mp3");
   u2 = loadSound("./Uploading/2scanning.mp3");
@@ -101,19 +101,19 @@ function preload() {
   u6 = loadSound("./Uploading/Congratulations.mp3");
 
   // //testing voice files
-  // a0 = loadSound("./ActivationTest/a0.mp3");
-  // a1 = loadSound("./ActivationTest/a1.mp3");
-  // a3 = loadSound("./ActivationTest/a3.mp3");
-  // a5 = loadSound("./ActivationTest/a5.mp3");
-  // a7 = loadSound("./ActivationTest/a7.mp3");
-  // a9 = loadSound("./ActivationTest/a9.mp3");
-  // a10 = loadSound("./ActivationTest/a10.mp3");
-  // d9 = loadSound("./DeactivationTest/d9.mp3");
-  // d7 = loadSound("./DeactivationTest/d7.mp3");
-  // d5 = loadSound("./DeactivationTest/d5.mp3");
-  // d3 = loadSound("./DeactivationTest/d3.mp3");
-  // d1 = loadSound("./DeactivationTest/d1.mp3");
-  // d0 = loadSound("./Deactivation/d0.mp3");
+  a0 = loadSound("./ActivationTest/a0.mp3");
+  a1 = loadSound("./ActivationTest/a1.mp3");
+  a3 = loadSound("./ActivationTest/a3.mp3");
+  a5 = loadSound("./ActivationTest/a5.mp3");
+  a7 = loadSound("./ActivationTest/a7.mp3");
+  a9 = loadSound("./ActivationTest/a9.mp3");
+  a10 = loadSound("./ActivationTest/a10.mp3");
+  d9 = loadSound("./DeactivationTest/d9.mp3");
+  d7 = loadSound("./DeactivationTest/d7.mp3");
+  d5 = loadSound("./DeactivationTest/d5.mp3");
+  d3 = loadSound("./DeactivationTest/d3.mp3");
+  d1 = loadSound("./DeactivationTest/d1.mp3");
+  d0 = loadSound("./Deactivation/d0.mp3");
 }
 
 function setup() {
@@ -168,10 +168,9 @@ function draw() {
   text("waiver:", 10, windowHeight * 5 / 6 - 60);
   text("Warning: never take off your headset when the session is in progress, as it might cause irreversible brain damage.", 10, windowHeight * 5 / 6 - 30);
   text("In case of any detected discomfort or malfunction, emergency instruction will light up.", 10, windowHeight * 5 / 6);
-  text("You can follow the instruction to deactivate the program.", 10, windowHeight * 5 / 6 + 30);
   if (showSequence) {
     fill(255, 0, 0);
-    text("deactivating sequence: 1, 7, 3, 5, 9, 2, 10, 4, 6, 8...", 10, windowHeight * 5 / 6 + 60);
+    text("To shut down the program, deactivate the modules in the following sequence: 1, 7, 3, 5, 9, 2, 10, 4, 6, 8", 10, windowHeight * 5 / 6 + 30);
   }
   //track number of activated modules
   numOfActivated = modules.filter(_module => {
@@ -279,47 +278,37 @@ function mousePressed() {
       if (stage == "ACTIVATION") {
 
         if (numOfActivated == 1 - 1 && !modules[i].isActivated && !a0.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
           Tone.Transport.start();
           s1.start();
           a1.play(3);
         } else if (numOfActivated == 2 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
           s2.start();
         } else if (numOfActivated == 3 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
           s3.start();
           a3.play(1);
         } else if (numOfActivated == 4 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
           s4.start();
         } else if (numOfActivated == 5 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
           a5.play(2);
           s5.start();
         } else if (numOfActivated == 6 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
           s6.start();
         } else if (numOfActivated == 7 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
           s7.start();
           a7.play(1);
         } else if (numOfActivated == 8 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
         } else if (numOfActivated == 9 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
           a9.play();
         } else if (numOfActivated == 10 - 1 && !modules[i].isActivated && !a9.isPlaying()) {
-          // activateModules();
           modules[i].activate(mouseX, mouseY);
           a10.play(3);
           s10.start();
@@ -354,7 +343,6 @@ function mousePressed() {
 
         if (numOfActivated == 10 && !a10.isPlaying() && modules[0].isActivated && modules[0].mouseClickedOnModule(mouseX, mouseY) && modules[0].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
           modules[0].deactivate(mouseX, mouseY);
-          d9.playMode()
           d9.play();
         } else if (numOfActivated == 9 && modules[6].isActivated && modules[6].mouseClickedOnModule(mouseX, mouseY) && !uploadingVoiceIsPlaying()) {
           modules[6].deactivate(mouseX, mouseY);
