@@ -219,6 +219,7 @@ function draw() {
   }
   if (fullyDeactivated && !d0.isPlaying()) {
     console.log('shutdown');
+    showSequence = false;
     osc1.stop();
     osc2.stop();
     osc3.stop();
