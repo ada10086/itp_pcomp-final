@@ -44,8 +44,8 @@ var s7 = new Tone.Player("./SoundTest/activation/drone loop.mp3").toMaster();
 s7.volume.value = -20;
 s7.loop = true;
 // var s10 = new Tone.Player("./SoundTest/deactivation/eflat pulse.mp3").toMaster();
-var s10 = new Tone.Player("./SoundTest/activation/upload.mp3").toMaster();
-s10.volume.value = -20;
+var s10 = new Tone.Player("./SoundTest/activation/tension synths.mp3").toMaster();
+s10.volume.value = -5;
 s10.loop = true;
 
 //deactivation:
@@ -56,16 +56,20 @@ ampEnv = new Tone.AmplitudeEnvelope({
   "release": 0.05
 }).toMaster();
 var noise = new Tone.Noise("white").connect(ampEnv).start(); //noise for interrupting uploading
-var s11 = new Tone.Player("./SoundTest/deactivation/analog extreme.mp3").toMaster();
-s11.volume.value = -10;
-s11.loop = true;
-var s12 = new Tone.Player("./SoundTest/deactivation/mri1.mp3").toMaster();
+
+//pulse sound
+var autoFilter2 = new Tone.AutoFilter("8n").toMaster().start();
+var autoFilter1 = new Tone.AutoFilter("4n").toMaster().start();
+var s11 = new Tone.Oscillator(300, "triangle").connect(autoFilter1).connect(autoFilter2).toMaster();
+s11.volume.value = -25;
+
+var s12 = new Tone.Player("./SoundTest/deactivation/upload.mp3").toMaster();
 s12.volume.value = -10;
 s12.loop = true;
-var s13 = new Tone.Player("./SoundTest/deactivation/mri2.mp3").toMaster();
+var s13 = new Tone.Player("./SoundTest/deactivation/analog extreme.mp3").toMaster();
 s13.volume.value = -10;
 s13.loop = true;
-var s14 = new Tone.Player("./SoundTest/deactivation/tension synths.mp3").toMaster();
+var s14 = new Tone.Player("./SoundTest/deactivation/mri2.mp3").toMaster();
 s14.volume.value = -10;
 s14.loop = true;
 var osc1 = new Tone.Oscillator(300, "square").toMaster();
@@ -76,21 +80,21 @@ var osc3 = new Tone.Oscillator(500, "triangle").toMaster();
 osc3.volume.value = -30;
 
 function preload() {
-  // a0 = loadSound("./ActivationV3/a0.mp3");
-  // a1 = loadSound("./ActivationV3/a1.mp3");
-  // a3 = loadSound("./ActivationV3/a3.mp3");
-  // a5 = loadSound("./ActivationV3/a5.mp3");
-  // a7 = loadSound("./ActivationV3/a7.mp3");
-  // a9 = loadSound("./ActivationV3/a9.mp3");
-  // a10 = loadSound("./ActivationV3/a10.mp3");
+  a0 = loadSound("./ActivationV3/a0.mp3");
+  a1 = loadSound("./ActivationV3/a1.mp3");
+  a3 = loadSound("./ActivationV3/a3.mp3");
+  a5 = loadSound("./ActivationV3/a5.mp3");
+  a7 = loadSound("./ActivationV3/a7.mp3");
+  a9 = loadSound("./ActivationV3/a9.mp3");
+  a10 = loadSound("./ActivationV3/a10.mp3");
   urg1 = loadSound("./ActivationV3/urging 1.mp3");
   urg2 = loadSound("./ActivationV3/urging 2.mp3");
-  // d9 = loadSound("./Deactivation/d9.mp3");
-  // d7 = loadSound("./Deactivation/d7.mp3");
-  // d5 = loadSound("./Deactivation/d5.mp3");
-  // d3 = loadSound("./Deactivation/d3.mp3");
-  // d1 = loadSound("./Deactivation/d1.mp3");
-  // d0 = loadSound("./Deactivation/d0.mp3");
+  d9 = loadSound("./Deactivation/d9.mp3");
+  d7 = loadSound("./Deactivation/d7.mp3");
+  d5 = loadSound("./Deactivation/d5.mp3");
+  d3 = loadSound("./Deactivation/d3.mp3");
+  d1 = loadSound("./Deactivation/d1.mp3");
+  d0 = loadSound("./Deactivation/d0.mp3");
 
   u1 = loadSound("./Uploading/1initialize.mp3");
   u2 = loadSound("./Uploading/2scanning.mp3");
@@ -100,19 +104,21 @@ function preload() {
   u6 = loadSound("./Uploading/Congratulations.mp3");
 
   // // //testing voice files
-  a0 = loadSound("./ActivationTest/a0.mp3");
-  a1 = loadSound("./ActivationTest/a1.mp3");
-  a3 = loadSound("./ActivationTest/a3.mp3");
-  a5 = loadSound("./ActivationTest/a5.mp3");
-  a7 = loadSound("./ActivationTest/a7.mp3");
-  a9 = loadSound("./ActivationTest/a9.mp3");
-  a10 = loadSound("./ActivationTest/a10.mp3");
-  d9 = loadSound("./DeactivationTest/d9.mp3");
-  d7 = loadSound("./DeactivationTest/d7.mp3");
-  d5 = loadSound("./DeactivationTest/d5.mp3");
-  d3 = loadSound("./DeactivationTest/d3.mp3");
-  d1 = loadSound("./DeactivationTest/d1.mp3");
-  d0 = loadSound("./DeactivationTest/d0.mp3");
+  // a0 = loadSound("./ActivationTest/a0.mp3");
+  // a1 = loadSound("./ActivationTest/a1.mp3");
+  // a3 = loadSound("./ActivationTest/a3.mp3");
+  // a5 = loadSound("./ActivationTest/a5.mp3");
+  // a7 = loadSound("./ActivationTest/a7.mp3");
+  // a9 = loadSound("./ActivationTest/a9.mp3");
+  // a10 = loadSound("./ActivationTest/a10.mp3");
+  // urg1 = loadSound("./ActivationV3/urging 1.mp3");
+  // urg2 = loadSound("./ActivationV3/urging 2.mp3");
+  // d9 = loadSound("./DeactivationTest/d9.mp3");
+  // d7 = loadSound("./DeactivationTest/d7.mp3");
+  // d5 = loadSound("./DeactivationTest/d5.mp3");
+  // d3 = loadSound("./DeactivationTest/d3.mp3");
+  // d1 = loadSound("./DeactivationTest/d1.mp3");
+  // d0 = loadSound("./DeactivationTest/d0.mp3");
 }
 
 function setup() {
@@ -452,6 +458,7 @@ function startUploadingTimer() {
   // console.log(millis() - uploadLastTime);
   if (millis() - uploadLastTime > 7000 && counter < uploadingVoice.length && !fullyDeactivated) {
     console.log("uploading in progess")
+    s10.stop();
     uploadingVoice[counter].play();
     if (counter < uploadingSound.length) {
       uploadingSound[counter].start();
