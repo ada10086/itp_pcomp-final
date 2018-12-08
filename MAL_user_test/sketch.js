@@ -138,6 +138,8 @@ function startSession() {
   a0.play();
   stage = "ACTIVATION";
   showSequence = false;
+  fullyDeactivated = false;
+  seqLit = false;
 
   //deactivate all modules to start/reset
   for (i = 0; i < 10; i++) {
@@ -435,8 +437,8 @@ function mousePressed() {
 }
 
 function startUrgingTimer() {
-  console.log("urging timer starts");
-  console.log(millis() - lastTime);
+  // console.log("urging timer starts");
+  // console.log(millis() - lastTime);
   if (millis() - lastTime > 5000 && !fullyDeactivated) {
     urg1.play();
     lastTime = millis();
@@ -452,15 +454,20 @@ function startUploadingTimer() {
     console.log("uploading in progess")
     uploadingVoice[counter].play();
     if (counter < uploadingSound.length) {
-      // s10.stop();
       uploadingSound[counter].start();
     }
     counter++;
     uploadLastTime = millis();
   } else if (d9.isPlaying() || d7.isPlaying() || d5.isPlaying() || d3.isPlaying() || d1.isPlaying()) {
     uploadLastTime = millis();
-  } else if (counter > uploadingVoice.length) {
+  } 
+  else if (counter == 6) {
+    showSequence = false;
     s10.stop();
+    s11.stop();
+    s12.stop();
+    s13.stop();
+    s14.stop();
   }
 }
 
