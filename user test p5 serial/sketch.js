@@ -1,3 +1,46 @@
+var btnPressed;
+var btn1State,btn2State,btn3State;
+var pBtn1State,pBtn2State,pBtn3State;
+
+//serial variables:
+var serial;
+var portName = '/dev/cu.usbmodem1441'; //!!!change to your port
+var inData;
+
+
+//serial communication:
+function serverConnected() {
+    console.log('connected to server.');
+}
+
+function portOpen() {
+    console.log('the serial port opened.')
+}
+
+function serialError(err) {
+    console.log('Something went wrong with the serial port.' + err);
+}
+
+function portClose() {
+    console.log('The serial port closed.');
+}
+
+function serialEvent() {
+    // inData = Number(serial.read());
+    var inString = serial.readStringUntil('\r\n');
+    if (inString.length > 0) {
+        var buttons = split(inString, ','); 
+        if (buttons.length > 2) {
+                btn1State = buttons[0];
+                btn2State = buttons[1];
+                btn3State = buttons[2];
+            }
+        }
+}
+
+
+
+
 var modules = []
 var moduleW = 40;
 var moduleH = 150;
@@ -9,8 +52,8 @@ var fullyDeactivated = false;
 // var modulePosition;  //clicked module position vector for calculating index
 // var index; //index of clicked module
 var lastTime; //timer for urging
-var uploadLastTime= 0;  //uploading stage voice timer
-var counter = 0 ;   //counter for uploading stage voice
+var uploadLastTime;  //uploading stage voice timer
+var counter;   //counter for uploading stage voice
 var seqLastTime; //for blinking deactivating sequence
 var seqLit = false;
 //voice:
@@ -43,6 +86,7 @@ s6.loop = true;
 var s7 = new Tone.Player("./SoundTest/activation/drone loop.mp3").toMaster();
 s7.volume.value = -20;
 s7.loop = true;
+// var s10 = new Tone.Player("./SoundTest/deactivation/eflat pulse.mp3").toMaster();
 var s10 = new Tone.Player("./SoundTest/activation/tension synths.mp3").toMaster();
 s10.volume.value = -5;
 s10.loop = true;
@@ -71,6 +115,7 @@ s13.loop = true;
 var s14 = new Tone.Player("./SoundTest/deactivation/mri2.mp3").toMaster();
 s14.volume.value = -10;
 s14.loop = true;
+
 var osc1 = new Tone.Oscillator(300, "square").toMaster();
 osc1.volume.value = -30;
 var osc2 = new Tone.Oscillator(340, "sine").toMaster();
@@ -79,46 +124,60 @@ var osc3 = new Tone.Oscillator(500, "triangle").toMaster();
 osc3.volume.value = -30;
 
 function preload() {
-  a0 = loadSound("./ActivationV4/a0.mp3");
-  a1 = loadSound("./ActivationV4/a1.mp3");
-  a3 = loadSound("./ActivationV4/a3.mp3");
-  a5 = loadSound("./ActivationV4/a5.mp3");
-  a7 = loadSound("./ActivationV4/a7.mp3");
-  a9 = loadSound("./ActivationV4/a9.mp3");
-  a10 = loadSound("./ActivationV4/a10.mp3");
-  urg1 = loadSound("./ActivationV4/urging.mp3");
-  d9 = loadSound("./Deactivation/d9.mp3");
-  d7 = loadSound("./Deactivation/d7.mp3");
-  d5 = loadSound("./Deactivation/d5.mp3");
-  d3 = loadSound("./Deactivation/d3.mp3");
-  d1 = loadSound("./Deactivation/d1.mp3");
-  d0 = loadSound("./Deactivation/d0.mp3");
+  // a0 = loadSound("./ActivationV3/a0.mp3");
+  // a1 = loadSound("./ActivationV3/a1.mp3");
+  // a3 = loadSound("./ActivationV3/a3.mp3");
+  // a5 = loadSound("./ActivationV3/a5.mp3");
+  // a7 = loadSound("./ActivationV3/a7.mp3");
+  // a9 = loadSound("./ActivationV3/a9.mp3");
+  // a10 = loadSound("./ActivationV3/a10.mp3");
+  // urg1 = loadSound("./ActivationV3/urging 1.mp3");
+  // urg2 = loadSound("./ActivationV3/urging 2.mp3");
+  // d9 = loadSound("./Deactivation/d9.mp3");
+  // d7 = loadSound("./Deactivation/d7.mp3");
+  // d5 = loadSound("./Deactivation/d5.mp3");
+  // d3 = loadSound("./Deactivation/d3.mp3");
+  // d1 = loadSound("./Deactivation/d1.mp3");
+  // d0 = loadSound("./Deactivation/d0.mp3");
 
-  u1 = loadSound("./Uploading/u1.mp3");
-  u2 = loadSound("./Uploading/u2.mp3");
-  u3 = loadSound("./Uploading/u3.mp3");
-  u4 = loadSound("./Uploading/u4.mp3");
-  u5 = loadSound("./Uploading/u5.mp3");
-  u6 = loadSound("./Uploading/u6.mp3");
+  u1 = loadSound("./Uploading/1initialize.mp3");
+  u2 = loadSound("./Uploading/2scanning.mp3");
+  u3 = loadSound("./Uploading/3mapping.mp3");
+  u4 = loadSound("./Uploading/4reestablishing.mp3");
+  u5 = loadSound("./Uploading/5uploading.mp3");
+  u6 = loadSound("./Uploading/Congratulations.mp3");
 
   // // //testing voice files
-  // a0 = loadSound("./ActivationTest/a0.mp3");
-  // a1 = loadSound("./ActivationTest/a1.mp3");
-  // a3 = loadSound("./ActivationTest/a3.mp3");
-  // a5 = loadSound("./ActivationTest/a5.mp3");
-  // a7 = loadSound("./ActivationTest/a7.mp3");
-  // a9 = loadSound("./ActivationTest/a9.mp3");
-  // a10 = loadSound("./ActivationTest/a10.mp3");
-  // urg1 = loadSound("./ActivationTest/urging 1.mp3");
-  // d9 = loadSound("./DeactivationTest/d9.mp3");
-  // d7 = loadSound("./DeactivationTest/d7.mp3");
-  // d5 = loadSound("./DeactivationTest/d5.mp3");
-  // d3 = loadSound("./DeactivationTest/d3.mp3");
-  // d1 = loadSound("./DeactivationTest/d1.mp3");
-  // d0 = loadSound("./DeactivationTest/d0.mp3");
+  a0 = loadSound("./ActivationTest/a0.mp3");
+  a1 = loadSound("./ActivationTest/a1.mp3");
+  a3 = loadSound("./ActivationTest/a3.mp3");
+  a5 = loadSound("./ActivationTest/a5.mp3");
+  a7 = loadSound("./ActivationTest/a7.mp3");
+  a9 = loadSound("./ActivationTest/a9.mp3");
+  a10 = loadSound("./ActivationTest/a10.mp3");
+  urg1 = loadSound("./ActivationV3/urging 1.mp3");
+  urg2 = loadSound("./ActivationV3/urging 2.mp3");
+  d9 = loadSound("./DeactivationTest/d9.mp3");
+  d7 = loadSound("./DeactivationTest/d7.mp3");
+  d5 = loadSound("./DeactivationTest/d5.mp3");
+  d3 = loadSound("./DeactivationTest/d3.mp3");
+  d1 = loadSound("./DeactivationTest/d1.mp3");
+  d0 = loadSound("./DeactivationTest/d0.mp3");
 }
 
 function setup() {
+      //serial communication:
+      serial = new p5.SerialPort();
+      serial.on('connected', serverConnected);
+      serial.on('open', portOpen);
+      serial.on('data', serialEvent);
+      serial.on('error', serialError);
+      serial.on('close', portClose);
+      serial.list();
+      serial.open(portName);
+
+
+      
   uploadingVoice = [u1, u2, u3, u4, u5, u6];
   uploadingSound = [s11, s12, s13, s14];
   createCanvas(windowWidth, windowHeight);
@@ -153,6 +212,23 @@ function startSession() {
 
 
 function draw() {
+  //serial:
+  if (btn1State !=  pBtn1State && btn1State == 1) {
+    btnPressed = 1;
+  } else if (btn2State !=  pBtn2State && btn2State == 1) {
+    btnPressed = 2;
+  } else if (btn3State !=  pBtn3State && pBtn3State == 1) {
+    btnPressed = 3;
+  } else {
+    btnPressed = 0;
+  }
+  
+  console.log(btnPressed);
+  if (btnPressed) {
+      buttonPressed();  //mousePressed
+    }
+
+
   background(0);
   for (i = 0; i < 10; i++) {
     modules[i].display();
@@ -193,7 +269,6 @@ function draw() {
   numOfActivated = modules.filter(_module => {
     return _module.isActivated === true
   }).length;
-
 
 
   if (stage == "ACTIVATION") {
@@ -260,29 +335,29 @@ class Module {
     rect(this.x, this.y, this.w, this.h);
   }
 
-  activate(_mx, _my) {
-    if (this.mouseClickedOnModule(_mx, _my)) {
+  activate() {  
+    // if (this.mouseClickedOnModule(_mx, _my)) {
       if (!this.isActivated) {
         this.isActivated = true;
-      }
+      // }
     }
   }
 
   deactivate(_mx, _my) {
-    if (this.mouseClickedOnModule(_mx, _my)) {
+    // if (this.mouseClickedOnModule(_mx, _my)) {
       if (this.isActivated) {
         this.isActivated = false;
-      }
+      // }
     }
   }
 
-  mouseClickedOnModule(_mx, _my) {
-    if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+  // mouseClickedOnModule(_mx, _my) {
+  //   if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // }
 
   // moduleClicked(_mx, _my) {
   //   if (_mx > this.x && _mx < (this.x + this.w) && _my > this.y && _my < (this.y + this.h)) {
@@ -294,61 +369,61 @@ class Module {
   // }
 }
 
-function mousePressed() {
+function buttonPressed() {
   for (i = 0; i < 10; i++) {
-    //if mouse is clicked on the module
-    if (modules[i].mouseClickedOnModule(mouseX, mouseY)) {
 
       //activating stage:
       if (stage == "ACTIVATION") {
-        if (numOfActivated == 1 - 1 && !modules[i].isActivated && !a0.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        
+        if (numOfActivated == 1 - 1 && !modules[btnPressed-1].isActivated && !a0.isPlaying()) {
+          modules[btnPressed-1].activate(); //move servo, light neopixels, serial write: btn[i]=2
+          moduleAction();
           s1.start();
           a1.play(3);
           lastTime = millis(); //urging timer
 
-        } else if (numOfActivated == 2 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        } else if (numOfActivated == 2 - 1 && !modules[btnPressed-1].isActivated && !a1.isPlaying()) {
+          modules[btnPressed-1].activate();
           s2.start();
           lastTime = millis(); //urging timer
 
-        } else if (numOfActivated == 3 - 1 && !modules[i].isActivated && !a1.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        } else if (numOfActivated == 3 - 1 && !modules[btnPressed-1].isActivated && !a1.isPlaying()) {
+          modules[btnPressed-1].activate();
           s3.start();
           a3.play(1);
           lastTime = millis(); //urging timer
 
-        } else if (numOfActivated == 4 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        } else if (numOfActivated == 4 - 1 && !modules[btnPressed-1].isActivated && !a3.isPlaying()) {
+          modules[btnPressed-1].activate();
           s4.start();
           lastTime = millis(); //urging timer
 
-        } else if (numOfActivated == 5 - 1 && !modules[i].isActivated && !a3.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        } else if (numOfActivated == 5 - 1 && !modules[btnPressed-1].isActivated && !a3.isPlaying()) {
+          modules[btnPressed-1].activate();
           a5.play(2);
           s5.start();
           lastTime = millis(); //urging timer
 
-        } else if (numOfActivated == 6 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        } else if (numOfActivated == 6 - 1 && !modules[btnPressed-1].isActivated && !a5.isPlaying()) {
+          modules[btnPressed-1].activate();
           s6.start();
           lastTime = millis(); //urging timer
 
-        } else if (numOfActivated == 7 - 1 && !modules[i].isActivated && !a5.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        } else if (numOfActivated == 7 - 1 && !modules[btnPressed-1].isActivated && !a5.isPlaying()) {
+          modules[btnPressed-1].activate();
           s7.start();
           a7.play(1);
           lastTime = millis(); //urging timer
 
-        } else if (numOfActivated == 8 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        } else if (numOfActivated == 8 - 1 && !modules[btnPressed-1].isActivated && !a7.isPlaying()) {
+          modules[btnPressed-1].activate();
           lastTime = millis(); //urging timer
 
-        } else if (numOfActivated == 9 - 1 && !modules[i].isActivated && !a7.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        } else if (numOfActivated == 9 - 1 && !modules[btnPressed-1].isActivated && !a7.isPlaying()) {
+          modules[btnPressed-1].activate();
           a9.play();
-        } else if (numOfActivated == 10 - 1 && !modules[i].isActivated && !a9.isPlaying()) {
-          modules[i].activate(mouseX, mouseY);
+        } else if (numOfActivated == 10 - 1 && !modules[btnPressed-1].isActivated && !a9.isPlaying()) {
+          modules[btnPressed-1].activate();
           a10.play(3);
           s10.start();
           s1.stop();
@@ -358,6 +433,8 @@ function mousePressed() {
           s5.stop();
           s6.stop();
           s7.stop();
+          uploadLastTime = millis();
+          counter = 0;
           seqLastTime = millis();
         }
 
@@ -425,6 +502,7 @@ function mousePressed() {
           s12.stop();
           s13.stop();
           s14.stop();
+          s10.stop();
           ampEnv.triggerAttackRelease("0.3");
           osc1.start();
           osc2.start();
@@ -434,14 +512,7 @@ function mousePressed() {
       }
     }
   }
-}
 
-
-////p5 serial in draw()
-//if (state = regular 1 - 8, currentState !== lastState){
-//   lastTime = millis();
-//   startUrgingTimer();
-// }
 
 function startUrgingTimer() {
   // console.log("urging timer starts");
@@ -454,11 +525,10 @@ function startUrgingTimer() {
   }
 }
 
-
 function startUploadingTimer() {
   // console.log("Uploading timer starts");
   // console.log(millis() - uploadLastTime);
-  if (millis() - uploadLastTime > 9000 && counter < uploadingVoice.length && !fullyDeactivated) {
+  if (millis() - uploadLastTime > 7000 && counter < uploadingVoice.length && !fullyDeactivated) {
     console.log("uploading in progess")
     s10.stop();
     uploadingVoice[counter].play();
@@ -490,7 +560,6 @@ function uploadingVoiceIsPlaying() {
   }
 }
 
-
-
-
-
+function moduleAction(){
+  serial.write(btnPressed)
+}

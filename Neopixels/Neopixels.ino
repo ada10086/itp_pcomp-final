@@ -23,43 +23,63 @@ void setup() {
 }
 
 void loop() {
-  //  //starting - all white
-  //        for (int i = 0; i < 60; i++) {
-  //          strip.setPixelColor(i, 255, 255, 255);
-  //        }
-  //        strip.show();
+//    //starting - all white
+//          for (int i = 0; i < 60; i++) {
+//            strip.setPixelColor(i, 255, 255, 255);
+//          }
+//          strip.show();
+
+
+//          for (int i = 0; i < 36; i++) {
+//            strip.setPixelColor(i, 255, 255, 255);
+//          }
+//          strip.show();
+//          for (int i = 36; i < 42; i++) {
+//            strip.setPixelColor(i, 0, 255, 0);
+//          }
+//          strip.show();
+//          for (int i = 42; i < 54; i++) {
+//            strip.setPixelColor(i, 255, 255, 255);
+//          }
+//          strip.show();
+//          for (int i = 54; i < 60; i++) {
+//            strip.setPixelColor(i, 0, 255, 0);
+//          }
+//          strip.show();
+
+
 
 
   //activating - green
-  //  if (millis() - buttonPressedTime < 700) { //blink for 0.7s when module moving
-  //    for (int i = 0; i < 6; i++) {
-  //      strip.setPixelColor(i, 0, 255, 0);
-  //    }
-  //    strip.show();
-  //    delay(100);
-  //    for (int i = 0; i < 6; i++) {
-  //      strip.setPixelColor(i, 0, 0, 0);
-  //    }
-  //    strip.show();
-  //    delay(100);
-  //  }else{    //fade in fade out when activated
-  //      for (int i = 0; i < 6; i++) {
-  //        strip.setPixelColor(i, 0, G, 0);
-  //      }
-  //      G = G + 3*s;
-  //      if (G < 1 || G > 254) { //1-254 to prevent from blinking
-  //        s = -s;
-  //      }
-  //      strip.show();
-  //      delay(10);
-  //  }
-  //
+//    if (millis() - buttonPressedTime < 700) { //blink for 0.7s when module moving
+//      for (int i = 0; i < 60; i++) {
+//        strip.setPixelColor(i, 0, 255, 0);
+//      }
+//      strip.show();
+//      delay(100);
+//      for (int i = 0; i < 60; i++) {
+//        strip.setPixelColor(i, 0, 0, 0);
+//      }
+//      strip.show();
+//      delay(100);
+//    }else{    //fade in fade out when activated
+//        for (int i = 0; i < 60; i++) {
+//          strip.setPixelColor(i, 0, G, 0);
+//        }
+//        G = G + 3*s;
+//        if (G < 1 || G > 254) { //1-254 to prevent from blinking
+//          s = -s;
+//        }
+//        strip.show();
+//        delay(10);
+//    }
+ 
 
   // //9th module activated,
   //  rainbow(10);//except the last remaining module (white)????
 
 
-  // 10th module activated
+//  // 10th module activated
   for (int i = 6; i < 60; i++) {
     strip.setPixelColor(i, random(255), 0, 0);
   }
@@ -68,7 +88,7 @@ void loop() {
 
 
   // //uploading start
-  //  theaterChase(strip.Color(127, 127, 127), 50); // White
+//    theaterChase(strip.Color(127, 127, 127), 50); // White
   theaterChaseRainbow(50);  //except deactivated modules.
 
 
